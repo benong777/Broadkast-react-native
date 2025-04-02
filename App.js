@@ -49,7 +49,7 @@ function AuthenticatedStack() {
         component={HomeScreen}
         options={{
           // tintColor automatically provided
-          headerRight: ({tintColor}) => <IconButton icon='exit' size={20} color={tintColor || 'white'} onPress={authCtx.logout}/>
+          headerRight: ({tintColor}) => <IconButton icon='exit' size={24} color={tintColor || 'white'} onPress={authCtx.logout}/>
           // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
         }}
       />
