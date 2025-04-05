@@ -6,7 +6,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 
-
 export default function SearchScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -20,32 +19,35 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      <GooglePlacesAutocomplete
-        placeholder="Search location"
-        fetchDetails={true}
-        onPress={(data, details = null) => {
-          if (details) {
-            const { lat, lng } = details.geometry.location;
-            setSearchedLocation({
-              latitude: lat,
-              longitude: lng,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            });
-            setQuery(data.description);
-          }
-        }}
-        query={{
-          key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-          language: 'en',
-        }}
-        styles={{
-          textInput: styles.input,
-        }}
-      />
       <MapView style={styles.map} region={searchedLocation}>
         <Marker coordinate={searchedLocation} title={query} />
       </MapView>
+      <View style={styles.searchContainer}>
+        <GooglePlacesAutocomplete
+          placeholder="Search location"
+          fetchDetails={true}
+          onPress={(data, details = null) => {
+            if (details) {
+              const { lat, lng } = details.geometry.location;
+              setSearchedLocation({
+                latitude: lat,
+                longitude: lng,
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
+              });
+              setQuery(data.description);
+            }
+          }}
+          query={{
+            key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+            language: 'en',
+          }}
+          styles={{
+            container: styles.autocompleteContainer,
+            textInput: styles.input,
+          }}
+        />
+      </View>
     </View>
   );
 }
@@ -53,10 +55,19 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
+  searchContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  autocompleteContainer: {
+    flex: 0,
+  },
   input: {
     backgroundColor: 'white',
     padding: 10,
-    borderRadius: 5,
-    margin: 10,
+    borderRadius: 16,
   },
 });
