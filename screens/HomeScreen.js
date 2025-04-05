@@ -39,7 +39,8 @@ export default function HomeScreen() {
       {location && (
         <MapView
           ref={mapRef}
-          style={styles.map}
+          // style={styles.map}
+          style={StyleSheet.absoluteFillObject}
           showsUserLocation={true}
           showsMyLocationButton={true}
           initialRegion={location}
@@ -65,6 +66,7 @@ export default function HomeScreen() {
           language: 'en',
         }}
         styles={{
+          container: styles.autocompleteContainer,
           textInput: styles.input,
         }}
       />
@@ -72,50 +74,14 @@ export default function HomeScreen() {
   );
 }
 
-// export function SearchScreen() {
-//   const route = useRoute();
-//   const { query } = route.params;
-//   const [searchedLocation, setSearchedLocation] = useState(null);
-
-//   useEffect(() => {
-//     const fetchLocation = async () => {
-//       const apiKey = '';
-//       const response = await fetch(
-//         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`
-//       );
-//       const data = await response.json();
-//       if (data.results.length > 0) {
-//         const loc = data.results[0].geometry.location;
-//         setSearchedLocation({
-//           latitude: loc.lat,
-//           longitude: loc.lng,
-//           latitudeDelta: 0.05,
-//           longitudeDelta: 0.05,
-//         });
-//       }
-//     };
-//     fetchLocation();
-//   }, [query]);
-
-//   return (
-//     <View style={styles.container}>
-//       {searchedLocation && (
-//         <MapView style={styles.map} initialRegion={searchedLocation}>
-//           <Marker coordinate={searchedLocation} title={query} />
-//         </MapView>
-//       )}
-//     </View>
-//   );
-// }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
+  autocompleteContainer: {
+    flex: 0,
+  },
   input: {
-    position: 'absolute',
-    top: 40,
-    left: 10,
-    right: 10,
     backgroundColor: 'white',
     padding: 10,
     borderRadius: 5,
@@ -255,8 +221,6 @@ const styles = StyleSheet.create({
 //         // provider={PROVIDER_GOOGLE} // remove if not using Google Maps
 //         style={styles.map}
 //         region={{
-//           // latitude: 37.78825,
-//           // longitude: -122.4324,
 //           latitude: 37.785834,
 //           longitude: -122.406417,
 //           // latitude: myLat,
