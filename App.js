@@ -8,6 +8,7 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import HomeScreen from './screens/HomeScreen';
+import SearchScreen from './screens/SearchScreen';
 import DetailScreen from './screens/DetailScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import { Colors } from './constants/styles';
@@ -56,6 +57,15 @@ function AuthenticatedStack() {
       <Stack.Screen
         name="Details"
         component={DetailScreen}
+        options={{
+          // tintColor automatically provided
+          headerRight: ({tintColor}) => <IconButton icon='exit' size={20} color={tintColor || 'white'} onPress={authCtx.logout}/>
+          // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
+        }}
+      />
+      <Stack.Screen
+        name="SearchScreen"
+        component={SearchScreen}
         options={{
           // tintColor automatically provided
           headerRight: ({tintColor}) => <IconButton icon='exit' size={20} color={tintColor || 'white'} onPress={authCtx.logout}/>

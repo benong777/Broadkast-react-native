@@ -1,78 +1,343 @@
-import { Alert, View, Button, StyleSheet } from 'react-native';
-import IconButton from '../components/ui/IconButton';
-import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus, permissionResponse } from 'expo-location';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Button, StyleSheet } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 
-export default function HomeScreen({ navigation }) {
-  const [locationPermissionInformation, requestPermission] = useForegroundPermissions();
+export default function HomeScreen() {
+  const [location, setLocation] = useState(null);
+  const navigation = useNavigation();
+  const mapRef = useRef(null);
 
-  async function verifyPermissions() {
-    if (locationPermissionInformation.status === PermissionStatus.UNDETERMINED) {
-      const permissionResponse = await requestPermission();
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied');
+        return;
+      }
 
-      return permissionResponse.granted;
-    }
+      let currentLocation = await Location.getCurrentPositionAsync({});
+      const newLocation = {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+      setLocation(newLocation);
 
-    if (locationPermissionInformation.status === PermissionStatus.DENIED) {
-      Alert.alert(
-        'Insufficient Permissions!',
-        'You need to grant location permission to use this app.'
-      );
-      return false;
-    }
-
-    return true;
-  }
-
-  async function getLocationHandler() {
-    const hasPermission = verifyPermissions();
-
-    if (!hasPermission) return;
-
-    const location = await getCurrentPositionAsync();
-    console.log(location);
-  }
-
-  function pickOnMapHandler() {
-
-  }
-
-  function detailScreenHandler() {
-    navigation.navigate('Details');
-  }
-
-  function welcomeScreenHandler() {
-    navigation.navigate('Welcome');
-  }
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(newLocation, 1000);
+      }
+    })();
+  }, []);
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.map}></View>
-      <View style={styles.actions}>
-        <IconButton icon='location' size={24} onPress={getLocationHandler} />
-        <IconButton icon='map' size={24} onPress={pickOnMapHandler} />
-      </View>
-      <View style={{ margin: 48 }}>
-        <Button title='Go to details' onPress={detailScreenHandler}/>
-      </View>
-      <Button title='Go to welcome screen' onPress={welcomeScreenHandler}/>
+    <View style={styles.container}>
+      {location && (
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          initialRegion={location}
+        >
+          <Marker coordinate={location} title="You are here" />
+        </MapView>
+      )}
+      <GooglePlacesAutocomplete
+        placeholder="Search location"
+        fetchDetails={true}
+        onPress={(data, details = null) => {
+          if (details) {
+            const { lat, lng } = details.geometry.location;
+            navigation.navigate('SearchScreen', {
+              query: data.description,
+              latitude: lat,
+              longitude: lng,
+            });
+          }
+        }}
+        query={{
+          key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+          language: 'en',
+        }}
+        styles={{
+          textInput: styles.input,
+        }}
+      />
     </View>
-  )
+  );
 }
 
-const styles = StyleSheet.create({
-  map: {
-    width: '100%',
-    height: 200,
-    marginVertical: 8,
-    justifyContent: 'center',
-    alignItems: 'center', 
-    backgroundColor: 'lightblue',
-    borderRadius: 4,
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  }
+// export function SearchScreen() {
+//   const route = useRoute();
+//   const { query } = route.params;
+//   const [searchedLocation, setSearchedLocation] = useState(null);
 
+//   useEffect(() => {
+//     const fetchLocation = async () => {
+//       const apiKey = '';
+//       const response = await fetch(
+//         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`
+//       );
+//       const data = await response.json();
+//       if (data.results.length > 0) {
+//         const loc = data.results[0].geometry.location;
+//         setSearchedLocation({
+//           latitude: loc.lat,
+//           longitude: loc.lng,
+//           latitudeDelta: 0.05,
+//           longitudeDelta: 0.05,
+//         });
+//       }
+//     };
+//     fetchLocation();
+//   }, [query]);
+
+//   return (
+//     <View style={styles.container}>
+//       {searchedLocation && (
+//         <MapView style={styles.map} initialRegion={searchedLocation}>
+//           <Marker coordinate={searchedLocation} title={query} />
+//         </MapView>
+//       )}
+//     </View>
+//   );
+// }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  map: { flex: 1 },
+  input: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    right: 10,
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 5,
+  },
 });
+
+
+// import { useState, useEffect, useRef } from 'react';
+// import { Text, Alert, View, Button, StyleSheet, Platform, SafeAreaView } from 'react-native';
+// // import IconButton from '../components/ui/IconButton';
+// import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus, permissionResponse } from 'expo-location';
+
+// import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
+// import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+// import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
+
+// export default function HomeScreen({ navigation }) {
+//   const mapRef = useRef(null);
+
+//   const [myLat, setMyLat] = useState(37.78825);
+//   const [myLng, setMyLng] = useState(-122.4324);
+//   const [selectedLat, setSelectedLat] = useState(37.78825);
+//   const [selectedLng, setSelectedLng] = useState(-122.4324);
+//   const [selectedTitle, setSelectedTitle] = useState('Title');
+
+//   const [locationPermissionInformation, requestPermission] = useForegroundPermissions();
+
+//   useEffect(() => {
+//     async function getLocation() {
+//       const location =  await getLocationHandler();
+//       console.log(location.coords.latitude);
+//       console.log(location.coords.longitude);
+//       setMyLat(location.coords.latitude);
+//       setMyLng(location.coords.longitude);
+//       console.log(myLat);
+//       console.log(myLng);
+//     };
+//     getLocation();
+//   }, []);
+
+//   async function verifyPermissions() {
+//     if (locationPermissionInformation.status === PermissionStatus.UNDETERMINED) {
+//       const permissionResponse = await requestPermission();
+
+//       return permissionResponse.granted;
+//     }
+
+//     if (locationPermissionInformation.status === PermissionStatus.DENIED) {
+//       Alert.alert(
+//         'Insufficient Permissions!',
+//         'You need to grant location permission to use this app.'
+//       );
+//       return false;
+//     }
+
+//     return true;
+//   }
+
+//   async function getLocationHandler() {
+//     const hasPermission = verifyPermissions();
+
+//     if (!hasPermission) return;
+
+//     const location = await getCurrentPositionAsync();
+//     console.log('MyLocation:', location);
+//     return location;
+//   }
+
+//   function detailScreenHandler() {
+//     navigation.navigate('Details');
+//   }
+
+//   function welcomeScreenHandler() {
+//     navigation.navigate('Welcome');
+//   }
+
+//   async function moveToLocation(latitude, longitude) {
+//     await mapRef.current.animateToRegion(
+//       {
+//         latitude,
+//         longitude,
+//         latitudeDelta: 0.015,
+//         longitudeDelta: 0.0121,
+//       },
+//       // 2000,
+//     );
+//   }
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//     <View style={{ backgroundColor: 'white', zIndex: 99 }}>
+//       <Text style={{ color: 'red' }}>Lat: {myLat} Lng: {myLng}</Text>
+//     </View>
+//     <View style={styles.input}>
+//       {/* <Text style={{color: 'red'}}>{selectedTitle}</Text> */}
+//       <GooglePlacesAutocomplete
+//         GooglePlacesDetailsQuery={{ fields: "geometry" }}
+//         fetchDetails={true} // you need this to fetch the details object onPress
+//         GooglePlacesSearchQuery={{
+//           rankby: 'distance'
+//         }}
+//         placeholder='Search'
+//         onPress={(selectedLocationData, selectedLocationDetails = null) => {
+//           // 'details' is provided when fetchDetails = true
+//           let lat = selectedLocationDetails?.geometry?.location.lat;
+//           console.log(selectedLocationDetails?.geometry?.location.lat);
+//           console.log('Data:', selectedLocationData);
+//           // console.log('Details:', selectedLocationDetails);
+//           console.log('Details:', selectedLocationDetails);
+//           // console.log(JSON.stringify(selectedLocationDetails?.geometry?.location));
+//           moveToLocation(
+//             selectedLocationDetails?.geometry?.location.lat,
+//             selectedLocationDetails?.geometry?.location.lng,
+//           );
+//           setSelectedLat(selectedLocationDetails?.geometry?.location.lat);
+//           setSelectedLng(selectedLocationDetails?.geometry?.location.lng);
+//           // setSelectedTitle(JSON.stringify(selectedLocationData?.structured_formatting.main_text));
+//           setSelectedTitle(selectedLocationData?.structured_formatting.main_text);
+//           console.log(selectedLocationData?.structured_formatting.main_text);
+//         }}
+//         query={{
+//           key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+//           language: 'en',
+//           types:  'establishment',    // parks?
+//           radius: 30000,
+//           // location: `${selectedLat, selectedLng}`
+//         }}
+//         debounce={400}
+//         minLength={2}
+//         nearbyPlacesAPI='GooglePlacesSearch'
+//         enablePoweredByContainer={false}
+//         onFail={(error) => console.log(error)}
+//       />
+//     </View>
+//       <MapView
+//         ref={mapRef}
+//         // provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+//         style={styles.map}
+//         region={{
+//           // latitude: 37.78825,
+//           // longitude: -122.4324,
+//           latitude: 37.785834,
+//           longitude: -122.406417,
+//           // latitude: myLat,
+//           // longitude: myLng,
+//           latitudeDelta: 0.015,
+//           longitudeDelta: 0.0121,
+//         }}
+//         >
+//         <Marker
+//           // key={index}
+//           // coordinate={marker.latlng}
+//           // title={marker.title}
+//           // description={marker.description}
+
+//           // coordinate={{latitude: latitude, longitude: longitude}}
+//           // title={marker.title}
+//           // description={marker.description}
+//           // // image={{uri: 'custom_pin'}}
+
+//           // key={'1'}
+//           // coordinate={{latitude: 37.78825, longitude: -122.4324}}
+//           // coordinate={{latitude: selectedLat, longitude: selectedLng}}
+//           coordinate={{latitude: myLat, longitude: myLng}}
+//           title={Platform.OS === 'ios' ? selectedTitle : ''}
+//           // description={'Description'}
+//           // image={{uri: 'custom_pin'}}
+//         >
+//         </Marker>
+//         {/* {
+//           markersList.map((marker) => {
+//             return (T
+//               <Marker 
+//                 key={marker.id}
+//                 coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
+//                 title={marker.title}
+//                 description={marker.description}
+//               />
+//             );
+//           })
+//         } */}
+//       </MapView>
+// </SafeAreaView>
+
+//     // <View style={{ flex: 1 }}>
+//     //   <View style={styles.map}></View>
+//     //   <View style={styles.actions}>
+//     //     <IconButton icon='location' size={24} onPress={getLocationHandler} />
+//     //   </View>
+//     //   <View style={{ margin: 48 }}>
+//     //     <Button title='Go to details' onPress={detailScreenHandler}/>
+//     //   </View>
+//     //   <Button title='Go to welcome screen' onPress={welcomeScreenHandler}/>
+//     // </View>
+//   )
+// }
+
+// const styles = StyleSheet.create({
+//   map: {
+//     width: '100%',
+//     height: 200,
+//     marginVertical: 8,
+//     justifyContent: 'center',
+//     alignItems: 'center', 
+//     backgroundColor: 'lightblue',
+//     borderRadius: 4,
+//   },
+//   actions: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-around',
+//     alignItems: 'center',
+//   },
+//     container: {
+//       flex: 1,
+//     },
+//     input: {
+//       zIndex: 1,
+//       flex: 0.40,
+//     },
+//     map: {
+//       ...StyleSheet.absoluteFillObject,
+//       zIndex: 0,
+//     },
+
+// });
