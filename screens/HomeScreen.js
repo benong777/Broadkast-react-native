@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 
@@ -10,29 +10,64 @@ export default function HomeScreen() {
   const [location, setLocation] = useState(null);
   const navigation = useNavigation();
   const mapRef = useRef(null);
+  const searchRef = useRef(null);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== 'granted') {
+  //       console.log('Permission to access location was denied');
+  //       return;
+  //     }
+
+  //     let currentLocation = await Location.getCurrentPositionAsync({});
+  //     const newLocation = {
+  //       latitude: currentLocation.coords.latitude,
+  //       longitude: currentLocation.coords.longitude,
+  //       latitudeDelta: 0.05,
+  //       longitudeDelta: 0.05,
+  //     };
+  //     setLocation(newLocation);
+
+  //     if (mapRef.current) {
+  //       mapRef.current.animateToRegion(newLocation, 1000);
+  //     }
+  //   })();
+  // }, []);
+
+  const loadCurrentLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Permission to access location was denied');
+      return;
+    }
+
+    let currentLocation = await Location.getCurrentPositionAsync({});
+    const newLocation = {
+      latitude: currentLocation.coords.latitude,
+      longitude: currentLocation.coords.longitude,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    };
+    setLocation(newLocation);
+
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(newLocation, 1000);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission to access location was denied');
-        return;
-      }
-
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      const newLocation = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-      setLocation(newLocation);
-
-      if (mapRef.current) {
-        mapRef.current.animateToRegion(newLocation, 1000);
-      }
-    })();
+    loadCurrentLocation();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCurrentLocation();
+      if (searchRef.current) {
+        searchRef.current.clear();
+      }
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -49,6 +84,7 @@ export default function HomeScreen() {
         </MapView>
       )}
       <GooglePlacesAutocomplete
+        ref={searchRef}
         placeholder="Search location"
         fetchDetails={true}
         onPress={(data, details = null) => {

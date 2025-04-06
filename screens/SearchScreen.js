@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -9,13 +9,21 @@ import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 export default function SearchScreen() {
   const route = useRoute();
   const navigation = useNavigation();
+  const searchRef = useRef(null);
+
+  const [query, setQuery] = useState(route.params.query);
   const [searchedLocation, setSearchedLocation] = useState({
     latitude: route.params.latitude,
     longitude: route.params.longitude,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-  const [query, setQuery] = useState(route.params.query);
+
+  useEffect(() => {
+    if (searchRef.current && query) {
+      searchRef.current.setAddressText(query);
+    }
+  }, [query]);
 
   return (
     <View style={styles.container}>
@@ -24,6 +32,7 @@ export default function SearchScreen() {
       </MapView>
       <View style={styles.searchContainer}>
         <GooglePlacesAutocomplete
+          ref={searchRef}
           placeholder="Search location"
           fetchDetails={true}
           onPress={(data, details = null) => {
