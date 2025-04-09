@@ -1,13 +1,21 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Keyboard, View, StyleSheet, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { Ionicons } from '@expo/vector-icons';
+
 import * as Location from 'expo-location';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 
+// Use InteractionManager to defer heavier components (like maps/places autocomplete, location fetching) to after initial render
+import { InteractionManager } from 'react-native';
+
+
 export default function HomeScreen() {
   const [location, setLocation] = useState(null);
+  const [searchText, setSearchText] = useState('');
+
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const searchRef = useRef(null);
@@ -57,7 +65,11 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    loadCurrentLocation();
+    const task = InteractionManager.runAfterInteractions(() => {
+      // Load map, get location, etc.
+      loadCurrentLocation();
+    });
+    return () => task.cancel();
   }, []);
 
   useFocusEffect(
@@ -65,6 +77,7 @@ export default function HomeScreen() {
       loadCurrentLocation();
       if (searchRef.current) {
         searchRef.current.clear();
+        setSearchText('');
       }
     }, [])
   );
@@ -105,6 +118,29 @@ export default function HomeScreen() {
           container: styles.autocompleteContainer,
           textInput: styles.input,
         }}
+        textInputProps={{
+          value: searchText,
+          onChangeText: setSearchText,
+          placeholderTextColor: '#888',
+          clearButtonMode: 'never',
+        }}
+        renderRightButton={() =>
+          searchText.length > 0 ? (
+            <TouchableOpacity
+              onPress={() => {
+                setSearchText('');
+                if (searchRef.current) {
+                  searchRef.current.setAddressText('');
+                  searchRef.current.clear();
+                }
+                Keyboard.dismiss();
+              }}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close-circle" size={20} color="gray" />
+            </TouchableOpacity>
+          ) : null
+        }
       />
     </View>
   );
@@ -118,10 +154,17 @@ const styles = StyleSheet.create({
     flex: 0,
   },
   input: {
+    flex: 1,
     backgroundColor: 'white',
     padding: 10,
     margin: 10,
     borderRadius: 16,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    zIndex: 1,
   },
 });
 
