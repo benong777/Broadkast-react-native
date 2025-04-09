@@ -59,6 +59,19 @@ export default function HomeScreen() {
     }, [])
   );
 
+  const handleClearSearch = () => {
+    console.log('Clear button clicked!!!');
+    if (searchRef.current) {
+      searchRef.current.setAddressText('');
+      // Clear internal GooglePlacesAutocomplete predictions
+      searchRef.current.clear();
+      // Force blur to trigger hiding the dropdown
+      // searchRef.current.triggerBlur();
+    }
+    setSearchText('');
+    Keyboard.dismiss();
+  };
+
   return (
     <View style={styles.container}>
       {location && (
@@ -73,6 +86,7 @@ export default function HomeScreen() {
           <Marker coordinate={location} title="You are here" />
         </MapView>
       )}
+      <View style={{ paddingTop: 60, paddingHorizontal: 10 }}>
       <GooglePlacesAutocomplete
         ref={searchRef}
         placeholder="Search location"
@@ -99,26 +113,37 @@ export default function HomeScreen() {
           value: searchText,
           onChangeText: setSearchText,
           placeholderTextColor: '#888',
-          clearButtonMode: 'never',
+          clearButtonMode: 'never',     // hides the native iOS clear button
         }}
         renderRightButton={() =>
+          // searchText.length > 0 ? (
+          //   <TouchableOpacity
+          //     onPress={() => {
+          //       setSearchText('');
+          //       if (searchRef.current) {
+          //         searchRef.current.setAddressText('');
+          //         // Clear internal GooglePlacesAutocomplete predictions
+          //         searchRef.current.clear();
+          //         // Force blur to trigger hiding the dropdown
+          //         searchRef.current.triggerBlur();
+          //       }
+          //       Keyboard.dismiss();
+          //     }}
+          //     style={styles.clearButton}
+          //   >
+          //     <Ionicons name="close-circle" size={20} color="gray" />
+          //   </TouchableOpacity>
+          // ) : null
           searchText.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => {
-                setSearchText('');
-                if (searchRef.current) {
-                  searchRef.current.setAddressText('');
-                  searchRef.current.clear();
-                }
-                Keyboard.dismiss();
-              }}
-              style={styles.clearButton}
-            >
-              <Ionicons name="close-circle" size={20} color="gray" />
-            </TouchableOpacity>
+            <View style={styles.clearButton}>
+              <TouchableOpacity onPress={handleClearSearch}>
+                <Ionicons name="close-circle" size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
           ) : null
         }
       />
+      </View>
     </View>
   );
 }
@@ -143,5 +168,9 @@ const styles = StyleSheet.create({
     right: 20,
     top: 20,
     zIndex: 1,
+
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    // marginRight: 10,
   },
 });
