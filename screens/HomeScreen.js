@@ -13,12 +13,30 @@ import { InteractionManager } from 'react-native';
 
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState(null);
-  const [searchText, setSearchText] = useState('');
-
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const searchRef = useRef(null);
+
+  const [location, setLocation] = useState(null);
+  const [searchText, setSearchText] = useState('');
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      // Load map, get location, etc.
+      loadCurrentLocation();
+    });
+    return () => task.cancel();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCurrentLocation();
+      if (searchRef.current) {
+        searchRef.current.clear();
+        setSearchText('');
+      }
+    }, [])
+  );
 
   const loadCurrentLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -41,32 +59,11 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => {
-      // Load map, get location, etc.
-      loadCurrentLocation();
-    });
-    return () => task.cancel();
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadCurrentLocation();
-      if (searchRef.current) {
-        searchRef.current.clear();
-        setSearchText('');
-      }
-    }, [])
-  );
-
   const handleClearSearch = () => {
-    console.log('Clear button clicked!!!');
     if (searchRef.current) {
       searchRef.current.setAddressText('');
       // Clear internal GooglePlacesAutocomplete predictions
       searchRef.current.clear();
-      // Force blur to trigger hiding the dropdown
-      // searchRef.current.triggerBlur();
     }
     setSearchText('');
     Keyboard.dismiss();
@@ -77,8 +74,7 @@ export default function HomeScreen() {
       {location && (
         <MapView
           ref={mapRef}
-          // style={styles.map}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFillObject} // Display map on entire screen
           showsUserLocation={true}
           showsMyLocationButton={false}
           initialRegion={location}
@@ -140,7 +136,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { flex: 1 },
   autocompleteContainer: {
     flex: 0,
   },
@@ -155,7 +150,7 @@ const styles = StyleSheet.create({
   clearButton: {
     position: 'absolute',
     right: 20,
-    top: 20,
+    top: 22,
     zIndex: 1,
   },
   myLocationButton: {
