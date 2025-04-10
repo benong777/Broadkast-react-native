@@ -31,8 +31,8 @@ export default function HomeScreen() {
     const newLocation = {
       latitude: currentLocation.coords.latitude,
       longitude: currentLocation.coords.longitude,
-      latitudeDelta: 0.05,
-      longitudeDelta: 0.05,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
     };
     setLocation(newLocation);
 
@@ -80,13 +80,13 @@ export default function HomeScreen() {
           // style={styles.map}
           style={StyleSheet.absoluteFillObject}
           showsUserLocation={true}
-          showsMyLocationButton={true}
+          showsMyLocationButton={false}
           initialRegion={location}
         >
           <Marker coordinate={location} title="You are here" />
         </MapView>
       )}
-      <View style={{ paddingTop: 60, paddingHorizontal: 10 }}>
+      <View style={{ paddingTop: 10, paddingHorizontal: 10 }}>
       <GooglePlacesAutocomplete
         ref={searchRef}
         placeholder="Search location"
@@ -168,9 +168,5 @@ const styles = StyleSheet.create({
     right: 20,
     top: 20,
     zIndex: 1,
-
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    // marginRight: 10,
   },
 });
