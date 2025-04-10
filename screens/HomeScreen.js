@@ -86,64 +86,53 @@ export default function HomeScreen() {
           <Marker coordinate={location} title="You are here" />
         </MapView>
       )}
+      {/* Need to investigate why the search input clear btn will not work without the View below */}
       <View style={{ paddingTop: 10, paddingHorizontal: 10 }}>
-      <GooglePlacesAutocomplete
-        ref={searchRef}
-        placeholder="Search location"
-        fetchDetails={true}
-        onPress={(data, details = null) => {
-          if (details) {
-            const { lat, lng } = details.geometry.location;
-            navigation.navigate('SearchScreen', {
-              query: data.description,
-              latitude: lat,
-              longitude: lng,
-            });
+        <GooglePlacesAutocomplete
+          ref={searchRef}
+          placeholder="Search location"
+          fetchDetails={true}
+          onPress={(data, details = null) => {
+            if (details) {
+              const { lat, lng } = details.geometry.location;
+              navigation.navigate('SearchScreen', {
+                query: data.description,
+                latitude: lat,
+                longitude: lng,
+              });
+            }
+          }}
+          query={{
+            key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+            language: 'en',
+          }}
+          styles={{
+            container: styles.autocompleteContainer,
+            textInput: styles.input,
+          }}
+          textInputProps={{
+            value: searchText,
+            onChangeText: setSearchText,
+            placeholderTextColor: '#888',
+            clearButtonMode: 'never',     // hides the native iOS clear button
+          }}
+          renderRightButton={() =>
+            searchText.length > 0 ? (
+              <View style={styles.clearButton}>
+                <TouchableOpacity onPress={handleClearSearch}>
+                  <Ionicons name="close-circle" size={20} color="gray" />
+                </TouchableOpacity>
+              </View>
+            ) : null
           }
-        }}
-        query={{
-          key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-          language: 'en',
-        }}
-        styles={{
-          container: styles.autocompleteContainer,
-          textInput: styles.input,
-        }}
-        textInputProps={{
-          value: searchText,
-          onChangeText: setSearchText,
-          placeholderTextColor: '#888',
-          clearButtonMode: 'never',     // hides the native iOS clear button
-        }}
-        renderRightButton={() =>
-          // searchText.length > 0 ? (
-          //   <TouchableOpacity
-          //     onPress={() => {
-          //       setSearchText('');
-          //       if (searchRef.current) {
-          //         searchRef.current.setAddressText('');
-          //         // Clear internal GooglePlacesAutocomplete predictions
-          //         searchRef.current.clear();
-          //         // Force blur to trigger hiding the dropdown
-          //         searchRef.current.triggerBlur();
-          //       }
-          //       Keyboard.dismiss();
-          //     }}
-          //     style={styles.clearButton}
-          //   >
-          //     <Ionicons name="close-circle" size={20} color="gray" />
-          //   </TouchableOpacity>
-          // ) : null
-          searchText.length > 0 ? (
-            <View style={styles.clearButton}>
-              <TouchableOpacity onPress={handleClearSearch}>
-                <Ionicons name="close-circle" size={20} color="gray" />
-              </TouchableOpacity>
-            </View>
-          ) : null
-        }
-      />
+        />
       </View>
+      <TouchableOpacity
+        onPress={loadCurrentLocation}
+        style={styles.myLocationButton}
+      >
+        <Ionicons name="locate" size={16} color="white" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -168,5 +157,19 @@ const styles = StyleSheet.create({
     right: 20,
     top: 20,
     zIndex: 1,
+  },
+  myLocationButton: {
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+    backgroundColor: '#007AFF',
+    borderRadius: 30,
+    padding: 12,
+    elevation: 4, // for Android shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 99,
   },
 });
