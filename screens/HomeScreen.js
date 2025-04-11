@@ -38,27 +38,6 @@ export default function HomeScreen() {
     }, [])
   );
 
-  const loadCurrentLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Permission to access location was denied');
-      return;
-    }
-
-    let currentLocation = await Location.getCurrentPositionAsync({});
-    const newLocation = {
-      latitude: currentLocation.coords.latitude,
-      longitude: currentLocation.coords.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    };
-    setLocation(newLocation);
-
-    if (mapRef.current) {
-      mapRef.current.animateToRegion(newLocation, 1000);
-    }
-  };
-
   const handleClearSearch = () => {
     if (searchRef.current) {
       searchRef.current.setAddressText('');
@@ -67,6 +46,27 @@ export default function HomeScreen() {
     }
     setSearchText('');
     Keyboard.dismiss();
+  };
+
+  const loadCurrentLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Permission to access location was denied');
+      return;
+    }
+
+    let currentLocation = await Location.getCurrentPositionAsync({});
+    const myLocation = {
+      latitude: currentLocation.coords.latitude,
+      longitude: currentLocation.coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    };
+    setLocation(myLocation);
+
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(myLocation, 1000);
+    }
   };
 
   return (
