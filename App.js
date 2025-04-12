@@ -1,3 +1,6 @@
+import 'react-native-get-random-values';  // These 2 imports are to resolve error:
+import { v4 as uuidv4 } from 'uuid';      // "crypto.getRandomValues() API not supported"
+
 import { useContext, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
