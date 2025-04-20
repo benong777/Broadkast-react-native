@@ -14,7 +14,7 @@ function LoginScreen({ navigation }) {
     setIsAuthenticating(true);
     try {
       const token = await loginUser(email, password);
-      authCtx.authenticate(token);
+      authCtx.authenticate(token.idToken);
     } catch (error) {
       Alert.alert(
         'Authentication failed!',

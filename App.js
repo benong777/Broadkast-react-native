@@ -107,11 +107,17 @@ function Root() {
   useEffect(() => {
     async function prepare() {
       try {
-        await SplashScreen.preventAutoHideAsync(); // Prevent splash screen from hiding
+        await SplashScreen.preventAutoHideAsync();
         const storedToken = await AsyncStorage.getItem('token');
-
-        if (storedToken) {
-          authCtx.authenticate(storedToken);
+        const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
+        const storedExpirationTime = await AsyncStorage.getItem('expirationTime');
+  
+        if (storedToken && storedRefreshToken && storedExpirationTime) {
+          authCtx.authenticate(
+            storedToken,
+            storedRefreshToken,
+            parseInt(storedExpirationTime)
+          );
         }
       } catch (e) {
         console.warn(e);
@@ -119,7 +125,7 @@ function Root() {
         setAppIsReady(true);
       }
     }
-
+  
     prepare();
   }, []);
 
