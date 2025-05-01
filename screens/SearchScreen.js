@@ -5,7 +5,6 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 
 export default function SearchScreen() {
   const route = useRoute();
@@ -107,7 +106,7 @@ export default function SearchScreen() {
             }
           }}
           query={{
-            key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
             language: 'en',
           }}
           styles={{

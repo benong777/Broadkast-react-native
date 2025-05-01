@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } from '@env';
 
 // Use InteractionManager to defer heavier components (like maps/places autocomplete, location fetching) to after initial render
 import { InteractionManager } from 'react-native';
@@ -99,7 +98,7 @@ export default function HomeScreen() {
             }
           }}
           query={{
-            key: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
             language: 'en',
           }}
           styles={{

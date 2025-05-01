@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { EXPO_PUBLIC_GOOGLE_WEB_API_KEY } from '@env';
 
 async function authenticate(mode, email, password) {
-  const url = `https://identitytoolkit.googleapis.com/v1/accounts:${mode}?key=${EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:${mode}?key=${process.env.EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
   const response = await axios.post(url, {
     email,
     password,
@@ -31,7 +30,7 @@ export async function loginUser(email, password) {
 }
 
 export async function refreshIdToken(refreshToken) {
-  const url = `https://securetoken.googleapis.com/v1/token?key=${EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
+  const url = `https://securetoken.googleapis.com/v1/token?key=${process.env.EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
   const response = await axios.post(url, {
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
@@ -45,7 +44,7 @@ export async function refreshIdToken(refreshToken) {
 }
 
 export async function resetPassword(email) {
-  const url = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${process.env.EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
 
   try {
     const response = await axios.post(url, {
