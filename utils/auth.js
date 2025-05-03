@@ -31,16 +31,22 @@ export async function loginUser(email, password) {
 
 export async function refreshIdToken(refreshToken) {
   const url = `https://securetoken.googleapis.com/v1/token?key=${process.env.EXPO_PUBLIC_GOOGLE_WEB_API_KEY}`;
-  const response = await axios.post(url, {
-    grant_type: 'refresh_token',
-    refresh_token: refreshToken,
-  });
 
-  return {
-    idToken: response.data.id_token,
-    refreshToken: response.data.refresh_token,
-    expiresIn: response.data.expires_in,
-  };
+  try {
+    const response = await axios.post(url, {
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    });
+
+    return {
+      idToken: response.data.id_token,
+      refreshToken: response.data.refresh_token,
+      expiresIn: response.data.expires_in,
+    };
+  } catch (error) {
+    console.error('Token refresh error:', error.response?.data || error.message);
+    throw new Error('Failed to refresh token');
+  }
 }
 
 export async function resetPassword(email) {
