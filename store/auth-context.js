@@ -63,37 +63,41 @@ export default function AuthContextProvider({ children }) {
   };
 
   useEffect(() => {
-    async function loadStoredAuthData() {
-      try {
-        const storedToken = await AsyncStorage.getItem('token');
-        const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
-        const storedExpirationTime = await AsyncStorage.getItem('expirationTime');
+    let isMounted = true;
 
-        if (storedToken && storedRefreshToken && storedExpirationTime) {
-          const now = new Date().getTime();
+  async function loadStoredAuthData() {
+    try {
+      const storedToken = await AsyncStorage.getItem('token');
+      const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
+      const storedExpirationTime = await AsyncStorage.getItem('expirationTime');
 
-          if (parseInt(storedExpirationTime) > now) {
-            const expiresIn = (parseInt(storedExpirationTime) - now) / 1000;
-            setAuthToken(storedToken);
-            setRefreshToken(storedRefreshToken);
-            setExpirationTime(parseInt(storedExpirationTime));
-            scheduleTokenRefresh(expiresIn);
-          } else {
-            const newData = await refreshIdToken(storedRefreshToken);
-            await storeTokenData(newData.idToken, newData.refreshToken, newData.expiresIn);
-            scheduleTokenRefresh(newData.expiresIn);
-          }
+      if (isMounted && storedToken && storedRefreshToken && storedExpirationTime) {
+        const now = Date.now();
+
+        if (parseInt(storedExpirationTime) > now) {
+          const expiresIn = (parseInt(storedExpirationTime) - now) / 1000;
+          setAuthToken(storedToken);
+          setRefreshToken(storedRefreshToken);
+          setExpirationTime(parseInt(storedExpirationTime));
+          scheduleTokenRefresh(expiresIn);
         } else {
-          logout();
+          const newData = await refreshIdToken(storedRefreshToken);
+          await storeTokenData(newData.idToken, newData.refreshToken, newData.expiresIn);
+          scheduleTokenRefresh(newData.expiresIn);
         }
-      } catch (err) {
-        console.warn('Failed to load stored auth data:', err);
-        logout();
       }
+    } catch (err) {
+      console.warn('Failed to load stored auth data:', err);
+      if (isMounted) logout();
     }
 
-    loadStoredAuthData();
-  }, [scheduleTokenRefresh]);
+    return () => {
+      isMounted = false;
+    };
+  }
+
+  loadStoredAuthData();
+}, [scheduleTokenRefresh]);
 
   const value = {
     token: authToken,
