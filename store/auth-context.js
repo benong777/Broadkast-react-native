@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useEffect, useState, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { refreshIdToken } from '../utils/auth';
 
@@ -13,22 +13,30 @@ export default function AuthContextProvider({ children }) {
   const [authToken, setAuthToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
   const [expirationTime, setExpirationTime] = useState(null);
-  let refreshTimeout;
 
+  // Use a useRef to hold the timeout reference reliably.
+  const refreshTimeoutRef = useRef();
+
+  // Ensures state is only updated if AsyncStorage succeeds.
   const storeTokenData = async (idToken, refreshToken, expiresIn) => {
-    const expiryTime = new Date().getTime() + parseInt(expiresIn) * 1000;
-    setAuthToken(idToken);
-    setRefreshToken(refreshToken);
-    setExpirationTime(expiryTime);
-
-    await AsyncStorage.setItem('token', idToken);
-    await AsyncStorage.setItem('refreshToken', refreshToken);
-    await AsyncStorage.setItem('expirationTime', expiryTime.toString());
+    try {
+      const expiryTime = new Date().getTime() + parseInt(expiresIn) * 1000;
+      await AsyncStorage.setItem('token', idToken);
+      await AsyncStorage.setItem('refreshToken', refreshToken);
+      await AsyncStorage.setItem('expirationTime', expiryTime.toString());
+  
+      setAuthToken(idToken);
+      setRefreshToken(refreshToken);
+      setExpirationTime(expiryTime);
+    } catch (err) {
+      console.error('Failed to persist token data:', err);
+      logout(); // Optionally log out if persistence fails
+    }
   };
 
   const scheduleTokenRefresh = useCallback((expiresIn) => {
-    if (refreshTimeout) clearTimeout(refreshTimeout);
-    refreshTimeout = setTimeout(async () => {
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    refreshTimeoutRef.current = setTimeout(async () => {
       try {
         const newData = await refreshIdToken(refreshToken);
         storeTokenData(newData.idToken, newData.refreshToken, newData.expiresIn);
@@ -51,33 +59,36 @@ export default function AuthContextProvider({ children }) {
     AsyncStorage.removeItem('token');
     AsyncStorage.removeItem('refreshToken');
     AsyncStorage.removeItem('expirationTime');
-    if (refreshTimeout) clearTimeout(refreshTimeout);
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
   };
 
   useEffect(() => {
     async function loadStoredAuthData() {
-      const storedToken = await AsyncStorage.getItem('token');
-      const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
-      const storedExpirationTime = await AsyncStorage.getItem('expirationTime');
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
+        const storedExpirationTime = await AsyncStorage.getItem('expirationTime');
 
-      if (storedToken && storedRefreshToken && storedExpirationTime) {
-        const now = new Date().getTime();
-        if (parseInt(storedExpirationTime) > now) {
-          const expiresIn = (parseInt(storedExpirationTime) - now) / 1000;
-          setAuthToken(storedToken);
-          setRefreshToken(storedRefreshToken);
-          setExpirationTime(parseInt(storedExpirationTime));
-          scheduleTokenRefresh(expiresIn);
-        } else {
-          try {
+        if (storedToken && storedRefreshToken && storedExpirationTime) {
+          const now = new Date().getTime();
+
+          if (parseInt(storedExpirationTime) > now) {
+            const expiresIn = (parseInt(storedExpirationTime) - now) / 1000;
+            setAuthToken(storedToken);
+            setRefreshToken(storedRefreshToken);
+            setExpirationTime(parseInt(storedExpirationTime));
+            scheduleTokenRefresh(expiresIn);
+          } else {
             const newData = await refreshIdToken(storedRefreshToken);
-            storeTokenData(newData.idToken, newData.refreshToken, newData.expiresIn);
+            await storeTokenData(newData.idToken, newData.refreshToken, newData.expiresIn);
             scheduleTokenRefresh(newData.expiresIn);
-          } catch (err) {
-            console.warn('Token expired and refresh failed:', err);
-            logout();
           }
+        } else {
+          logout();
         }
+      } catch (err) {
+        console.warn('Failed to load stored auth data:', err);
+        logout();
       }
     }
 
