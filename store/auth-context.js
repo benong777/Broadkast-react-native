@@ -35,7 +35,10 @@ export default function AuthContextProvider({ children }) {
   };
 
   const scheduleTokenRefresh = useCallback((expiresIn) => {
+    if (!refreshToken) return; // Guard clause
+
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+
     refreshTimeoutRef.current = setTimeout(async () => {
       try {
         const newData = await refreshIdToken(refreshToken);
