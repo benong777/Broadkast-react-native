@@ -59,9 +59,10 @@ export default function AuthContextProvider({ children }) {
     setAuthToken(null);
     setRefreshToken(null);
     setExpirationTime(null);
-    AsyncStorage.removeItem('token');
-    AsyncStorage.removeItem('refreshToken');
-    AsyncStorage.removeItem('expirationTime');
+    // AsyncStorage.removeItem('token');
+    // AsyncStorage.removeItem('refreshToken');
+    // AsyncStorage.removeItem('expirationTime');
+    AsyncStorage.multiRemove(['token', 'refreshToken', 'expirationTime']);
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
   };
 
