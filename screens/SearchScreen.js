@@ -76,6 +76,7 @@ export default function SearchScreen() {
       >
         {/* Only show marker for searched location */}
         {/* <Marker coordinate={markerLocation} title={query} /> */}
+        {/* Also need to add a key prop for each marker to allow multiple markers! */}
         <Marker coordinate={markerLocation} />
       </MapView>
 

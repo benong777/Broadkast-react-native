@@ -78,6 +78,7 @@ export default function HomeScreen() {
           showsMyLocationButton={false}
           initialRegion={location}
         >
+          {/* Need to add a key prop for each marker to allow multiple markers! */}
           <Marker coordinate={location} title="You are here" />
         </MapView>
       )}
