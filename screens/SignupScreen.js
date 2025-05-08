@@ -13,14 +13,11 @@ function SignupScreen() {
     setIsAuthenticating(true);
     try {
       const token = await createUser(email, password);
-      // authCtx.authenticate(token.idToken);
       authCtx.authenticate(token.idToken, token.refreshToken, parseInt(token.expiresIn));
     } catch (error) {
-      Alert.alert(
-        'Sign up failed.',
-        'Please check your inputs or try again later!',
-      )
-      setIsAuthenticating(false);
+      Alert.alert('Sign up failed.', 'Please check your inputs or try again later!');
+    } finally {
+      setIsAuthenticating(true);
     }
   }
 
