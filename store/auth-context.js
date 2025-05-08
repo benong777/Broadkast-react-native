@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback, useRef } from 'react';
+import { createContext, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { refreshIdToken } from '../utils/auth';
 
@@ -50,21 +50,19 @@ export default function AuthContextProvider({ children }) {
     }, (parseInt(expiresIn) - 60) * 1000); // refresh 60 seconds before expiry
   }, [refreshToken]);
 
-  const authenticate = async (idToken, refreshTokenVal, expiresIn) => {
+  //-- Adding useCallback for authenticate and logout to avoid unnecessary re-renders and unstable dependency arrays.
+  const authenticate = useCallback(async (idToken, refreshTokenVal, expiresIn) => {
     await storeTokenData(idToken, refreshTokenVal, expiresIn);
     scheduleTokenRefresh(expiresIn);
-  };
-
-  const logout = () => {
+  }, [scheduleTokenRefresh]);
+  
+  const logout = useCallback(() => {
     setAuthToken(null);
     setRefreshToken(null);
     setExpirationTime(null);
-    // AsyncStorage.removeItem('token');
-    // AsyncStorage.removeItem('refreshToken');
-    // AsyncStorage.removeItem('expirationTime');
     AsyncStorage.multiRemove(['token', 'refreshToken', 'expirationTime']);
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
-  };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -103,12 +101,12 @@ export default function AuthContextProvider({ children }) {
   loadStoredAuthData();
 }, [scheduleTokenRefresh]);
 
-  const value = {
+  const value = useMemo(() => ({
     token: authToken,
     isAuthenticated: !!authToken,
     authenticate,
     logout,
-  };
+  }), [authToken, authenticate, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
