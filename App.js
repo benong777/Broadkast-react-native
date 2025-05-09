@@ -46,43 +46,32 @@ function AuthenticatedStack() {
         headerStyle: { backgroundColor: Colors.primary500 },
         headerTintColor: 'white',
         contentStyle: { backgroundColor: Colors.primary100 },
+        // tintColor automatically provided
+        // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
+        headerRight: ({ tintColor }) => (
+          <IconButton icon="exit" size={20} color={tintColor || 'white'} onPress={authCtx.logout} />
+        ),
       }}
     >
       <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={{
-          // tintColor automatically provided
-          headerRight: ({tintColor}) => <IconButton icon='exit' size={24} color={tintColor || 'white'} onPress={authCtx.logout}/>
-          // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
-        }}
+        options={{}}
       />
       <Stack.Screen
         name="Details"
         component={DetailScreen}
-        options={{
-          // tintColor automatically provided
-          headerRight: ({tintColor}) => <IconButton icon='exit' size={20} color={tintColor || 'white'} onPress={authCtx.logout}/>
-          // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
-        }}
+        options={{}}
       />
       <Stack.Screen
         name="SearchScreen"
         component={SearchScreen}
-        options={{
-          // tintColor automatically provided
-          headerRight: ({tintColor}) => <IconButton icon='exit' size={20} color={tintColor || 'white'} onPress={authCtx.logout}/>
-          // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
-        }}
+        options={{}}
       />
       <Stack.Screen
         name="Welcome"
         component={WelcomeScreen}
-        options={{
-          // tintColor automatically provided
-          headerRight: ({tintColor}) => <IconButton icon='exit' size={20} color={tintColor || 'white'} onPress={authCtx.logout}/>
-          // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
-        }}
+        options={{}}
       />
     </Stack.Navigator>
   );
