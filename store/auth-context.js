@@ -20,7 +20,7 @@ export default function AuthContextProvider({ children }) {
   // Ensures state is only updated if AsyncStorage succeeds.
   const storeTokenData = async (idToken, refreshToken, expiresIn) => {
     try {
-      const expiryTime = new Date().getTime() + parseInt(expiresIn) * 1000;
+      const expiryTime = new Date().getTime() + parseInt(expiresIn, 10) * 1000;
       await AsyncStorage.setItem('token', idToken);
       await AsyncStorage.setItem('refreshToken', refreshToken);
       await AsyncStorage.setItem('expirationTime', expiryTime.toString());
@@ -40,7 +40,7 @@ export default function AuthContextProvider({ children }) {
 
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
 
-    const refreshDelay = Math.max(parseInt(expiresIn) - 60, 5) * 1000; // At least 5 seconds
+    const refreshDelay = Math.max(parseInt(expiresIn, 10) - 60, 5) * 1000; // At least 5 seconds
 
     refreshTimeoutRef.current = setTimeout(async () => {
       try {
@@ -79,11 +79,11 @@ export default function AuthContextProvider({ children }) {
       if (isMounted && storedToken && storedRefreshToken && storedExpirationTime) {
         const now = Date.now();
 
-        if (parseInt(storedExpirationTime) > now) {
-          const expiresIn = (parseInt(storedExpirationTime) - now) / 1000;
+        if (parseInt(storedExpirationTime, 10) > now) {
+          const expiresIn = (parseInt(storedExpirationTime, 10) - now) / 1000;
           setAuthToken(storedToken);
           setRefreshToken(storedRefreshToken);
-          setExpirationTime(parseInt(storedExpirationTime));
+          setExpirationTime(parseInt(storedExpirationTime, 10));
           scheduleTokenRefresh(expiresIn);
         } else {
           const newData = await refreshIdToken(storedRefreshToken);
