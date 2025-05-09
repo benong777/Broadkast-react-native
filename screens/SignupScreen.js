@@ -17,7 +17,7 @@ function SignupScreen() {
     } catch (error) {
       Alert.alert('Sign up failed.', 'Please check your inputs or try again later!');
     } finally {
-      setIsAuthenticating(true);
+      setIsAuthenticating(false);
     }
   }
 
