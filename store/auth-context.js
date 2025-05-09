@@ -34,10 +34,13 @@ export default function AuthContextProvider({ children }) {
     }
   };
 
+
   const scheduleTokenRefresh = useCallback((expiresIn) => {
     if (!refreshToken) return; // Guard clause
 
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+
+    const refreshDelay = Math.max(parseInt(expiresIn) - 60, 5) * 1000; // At least 5 seconds
 
     refreshTimeoutRef.current = setTimeout(async () => {
       try {
@@ -47,7 +50,7 @@ export default function AuthContextProvider({ children }) {
         console.error('Token refresh failed:', err);
         logout();
       }
-    }, (parseInt(expiresIn) - 60) * 1000); // refresh 60 seconds before expiry
+    }, refreshDelay); // refresh 60 seconds before expiry
   }, [refreshToken]);
 
   //-- Adding useCallback for authenticate and logout to avoid unnecessary re-renders and unstable dependency arrays.
@@ -56,12 +59,12 @@ export default function AuthContextProvider({ children }) {
     scheduleTokenRefresh(expiresIn);
   }, [scheduleTokenRefresh]);
   
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setAuthToken(null);
     setRefreshToken(null);
     setExpirationTime(null);
-    AsyncStorage.multiRemove(['token', 'refreshToken', 'expirationTime']);
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    await AsyncStorage.multiRemove(['token', 'refreshToken', 'expirationTime']);
   }, []);
 
   useEffect(() => {
@@ -92,13 +95,10 @@ export default function AuthContextProvider({ children }) {
       console.warn('Failed to load stored auth data:', err);
       if (isMounted) logout();
     }
-
-    return () => {
-      isMounted = false;
-    };
   }
 
   loadStoredAuthData();
+  return () => { isMounted = false; };
 }, [scheduleTokenRefresh]);
 
   const value = useMemo(() => ({
