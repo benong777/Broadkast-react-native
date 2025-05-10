@@ -46,6 +46,14 @@ function AuthenticatedStack() {
         headerStyle: { backgroundColor: Colors.primary500 },
         headerTintColor: 'white',
         contentStyle: { backgroundColor: Colors.primary100 },
+        /*
+          Best practice:
+          	•	Use `onPress={authCtx.logout}` if you don’t need to do anything after logout.
+          	•	Use `async`/`await` if you plan to add post-logout logic later.
+
+          Below, `onPress={authCtx.logout}` is fine, but if you want to do something after logout, use
+                 `onPress={async () => { await authCtx.logout(); ... }}`
+        */
         // tintColor automatically provided
         // headerRight: ({tintColor}) => <Button title='Logout' color={tintColor || 'white'} onPress={authCtx.logout} />
         headerRight: ({ tintColor }) => (
@@ -105,7 +113,7 @@ function Root() {
           authCtx.authenticate(
             storedToken,
             storedRefreshToken,
-            parseInt(storedExpirationTime)
+            parseInt(storedExpirationTime, 10)
           );
         }
       } catch (e) {
