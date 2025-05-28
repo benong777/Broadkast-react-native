@@ -1,18 +1,64 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Keyboard, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Keyboard, View, StyleSheet, TouchableOpacity, TextInput, Button, Text, FlatList } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
+import { initializeApp } from "firebase/app";
+import { getFirestore,
+         collection,
+         addDoc,
+         serverTimestamp,
+         getDocs } from "firebase/firestore"; 
+// import { getAnalytics } from "firebase/analytics";
+
+
 export default function SearchScreen() {
+  // FIREBASE_CONFIGURATION - For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+    authDomain: "kast-41337.firebaseapp.com",
+    databaseURL: "https://kast-41337-default-rtdb.firebaseio.com",
+    projectId: "kast-41337",
+    storageBucket: "kast-41337.firebasestorage.app",
+    messagingSenderId: "590505034870",
+    appId: "1:590505034870:web:d6db658cacceb41e760b57",
+    measurementId: "G-JTHXT59LX3"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+  // Analytics
+  // const analytics = getAnalytics(app);
+
+  // Initialize Cloud Firestore and get a reference to the service
+  const db = getFirestore(app);
+  // console.log(db);
+
   const route = useRoute();
   const searchRef = useRef(null);
   const mapRef = useRef(null);
 
   const [query, setQuery] = useState(route.params.query);
   const [searchText, setSearchText] = useState(route.params.query || '');
+
+  const [enteredComment, setEnteredComment] = useState('');
+  const [comments, setComments] = useState([]);
+
+  function commentInputHandler(enteredText) {
+    setEnteredComment(enteredText);
+  }
+
+  function addCommentHandler() {
+    addPostToDB();
+    // setComments((currComments) => [
+    //   ...currComments,
+    //   { comment: enteredComment, id: Math.random().toString() }
+    // ]);
+  }
 
   // Keeps track of the map region
   const [searchedLocation, setSearchedLocation] = useState({
@@ -33,6 +79,10 @@ export default function SearchScreen() {
       searchRef.current.setAddressText(query);
     }
   }, [query]);
+
+  useEffect(() => {
+    fetchPostsFromDB();
+  }, []);
 
   const handleClearSearch = () => {
     if (searchRef.current) {
@@ -66,8 +116,53 @@ export default function SearchScreen() {
     }
   };
 
+
+  async function addPostToDB() {
+    try {
+      const docRef = await addDoc(collection(db, "posts"), {
+        comment: "It works!!!",
+        uid: "testUser",
+        createdBy: serverTimestamp(),
+      });
+      console.log("Document written with ID: ", docRef.id);
+      fetchPostsFromDB();
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
+  async function fetchPostsFromDB() {
+    console.log('Fetching...');
+    const querySnapshot = await getDocs(collection(db, "posts"))
+    console.log(querySnapshot);
+    
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data())
+        console.log(`${doc.id}: ${doc.data().comment}`)
+    })
+  }
+
+  function displayDate(firebaseDate) {
+    const date = firebaseDate.toDate()
+
+    const day = date.getDate()
+    const year = date.getFullYear()
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const month = monthNames[date.getMonth()]
+
+    let hours = date.getHours()
+    let minutes = date.getMinutes()
+    hours = hours < 10 ? "0" + hours : hours
+    minutes = minutes < 10 ? "0" + minutes : minutes
+
+    return `${day} ${month} ${year} - ${hours}:${minutes}`
+  }
+
   return (
     <View style={styles.container}>
+      <View style={{ height: '30%' }}>
+
       <MapView
         ref={mapRef}
         style={StyleSheet.absoluteFillObject}
@@ -135,6 +230,27 @@ export default function SearchScreen() {
       <TouchableOpacity style={styles.myLocationButton} onPress={loadCurrentLocation}>
         <Ionicons name="locate" size={16} color="white" />
       </TouchableOpacity>
+      </View>
+      <View style={{ margin: 8, padding: 8, backgroundColor: 'white', borderRadius: 4,  }}>
+          <TextInput placeholder='Add comment' onChangeText={commentInputHandler} />
+            <View style={{ borderWidth: 1, borderColor: 'red' }}>
+              <Ionicons style={{ borderColor: 'red' }} name="send" size={16} color="blue" />
+            </View>
+          <Button title="Submit" onPress={addCommentHandler} />
+      </View>
+      <View style={styles.commentsContainer}>
+        <FlatList
+          data={comments}
+          keyExtractor={(item, idx) => item.id }
+          renderItem={(itemData) => {
+            return (
+              <View style={{}} >
+                <Text>{itemData.item.comment}</Text>
+              </View>
+            )
+          }}
+        />
+      </View>
     </View>
   );
 }
@@ -169,6 +285,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     zIndex: 10,
+  },
+  commentsContainer: {
+    marginBottom: 4,
+    marginHorizontal: 8,
+    padding: 8,
+    borderRadius: 4,
+    backgroundColor: 'white',
   },
 });
 //import React, { useEffect, useRef, useState } from 'react';
