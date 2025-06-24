@@ -14,6 +14,7 @@ async function authenticate(mode, email, password) {
 export async function createUser(email, password) {
   const data = await authenticate('signUp', email, password);
   return {
+    userId: data.localId,
     idToken: data.idToken,
     refreshToken: data.refreshToken,
     expiresIn: data.expiresIn,
@@ -23,6 +24,7 @@ export async function createUser(email, password) {
 export async function loginUser(email, password) {
   const data = await authenticate('signInWithPassword', email, password);
   return {
+    userId: data.localId,
     idToken: data.idToken,
     refreshToken: data.refreshToken,
     expiresIn: data.expiresIn,

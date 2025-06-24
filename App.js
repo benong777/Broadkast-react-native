@@ -105,12 +105,14 @@ function Root() {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
+        const storedUserId = await AsyncStorage.getItem('userId');
         const storedToken = await AsyncStorage.getItem('token');
         const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
         const storedExpirationTime = await AsyncStorage.getItem('expirationTime');
   
-        if (storedToken && storedRefreshToken && storedExpirationTime) {
+        if (storedUserId && storedToken && storedRefreshToken && storedExpirationTime) {
           authCtx.authenticate(
+            storedUserId,
             storedToken,
             storedRefreshToken,
             parseInt(storedExpirationTime, 10)

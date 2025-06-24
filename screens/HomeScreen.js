@@ -10,11 +10,16 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 // Use InteractionManager to defer heavier components (like maps/places autocomplete, location fetching) to after initial render
 import { InteractionManager } from 'react-native';
 
+import { useContext } from 'react';
+import { AuthContext } from '../store/auth-context';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const searchRef = useRef(null);
+
+  const authCtx = useContext(AuthContext);
+  const userId = authCtx.userId;
 
   const [location, setLocation] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -90,9 +95,12 @@ export default function HomeScreen() {
           fetchDetails={true}
           onPress={(data, details = null) => {
             if (details) {
+              // console.log('\nDETAILS:', details);
+              // console.log('\nDATA:', data);
               const { lat, lng } = details.geometry.location;
               navigation.navigate('SearchScreen', {
                 query: data.description,
+                placeId: data.place_id,
                 latitude: lat,
                 longitude: lng,
               });
