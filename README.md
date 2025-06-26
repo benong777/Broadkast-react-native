@@ -1,4 +1,6 @@
 # Broadkast-react-native
+* Note: This is the iOS/Android version of Broadkast developed using React Native. For my WEB version, click on the link below:
+[Broadkast README](https://github.com/benong777/Broadkast/blob/main/README.md)
 
 ## Table of Contents
 
