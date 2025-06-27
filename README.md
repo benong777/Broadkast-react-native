@@ -2,6 +2,9 @@
 * Note: This is the iOS/Android version of Broadkast developed using React Native. For my WEB version, click on the link below:
 [Broadkast README](https://github.com/benong777/Broadkast/blob/main/README.md)
 
+Video DEMO:
+https://www.youtube.com/watch?v=uR9E_H1A_zA
+
 ## Table of Contents
 
 - [Introduction](#introduction)
