@@ -61,7 +61,7 @@ function AuthContent({ isLogin, onAuthenticate }) {
       />
       <View style={styles.buttons}>
         <FlatButton onPress={switchAuthModeHandler}>
-          {isLogin ? 'Create a new user' : 'Log in instead'}
+          {isLogin ? 'Create a new user' : 'Have an account? Log in'}
         </FlatButton>
       </View>
     </View>

@@ -1,21 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Keyboard, View, StyleSheet, TouchableOpacity, TextInput, Button, Text, FlatList } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Text, View, StyleSheet, TextInput, 
+         Keyboard, Pressable, TouchableOpacity, FlatList } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Octicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 import { useContext } from 'react';
 import { AuthContext } from '../store/auth-context';
 
 import { db } from '../firebase.js';
-import {
-         collection,
+import { collection,
          setDoc,
          addDoc,
          getDocs,
          serverTimestamp } from "firebase/firestore"; 
 
+import { customStyles } from '../styles/customStyles.js';
+import { Avatar } from '../components/ui/Avatar.js';
+import { PressableOpacity } from '../components/ui/PressableOpacity.js';
 
 export default function SearchScreen({ route }) {
   const { query, placeId, latitude, longitude } = route.params;
@@ -31,18 +34,24 @@ export default function SearchScreen({ route }) {
   const [searchText, setSearchText] = useState(query || '');
 
   const [enteredComment, setEnteredComment] = useState('');
-  const [comments, setComments] = useState([]);
+  // const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState([
+    { comment: 'All courts are full.', id: 1, date: '10:32am - Jun 20' },
+    { comment: 'One court open!', id: 2, date: '10:50am - Jun 20'},
+    // { comment: 'Just left... one court open!', id: 3, date: '10:50am - Jun 20'},
+  ]);
 
   function commentInputHandler(enteredText) {
     setEnteredComment(enteredText);
   }
 
   function addCommentHandler() {
-    addPostToDB();
-    // setComments((currComments) => [
-    //   ...currComments,
-    //   { comment: enteredComment, id: Math.random().toString() }
-    // ]);
+    // addPostToDB();
+    setComments((currComments) => [
+      ...currComments,
+      { comment: enteredComment, id: Math.random().toString() }
+    ]);
+    console.log('SUBMIT btn pressed')
   }
 
   // Keeps track of the map region
@@ -254,21 +263,36 @@ export default function SearchScreen({ route }) {
         <Ionicons name="locate" size={16} color="white" />
       </TouchableOpacity>
       </View>
-      <View style={{ margin: 8, padding: 8, backgroundColor: 'white', borderRadius: 4,  }}>
-          <TextInput placeholder='Add comment' onChangeText={commentInputHandler} />
-            <View style={{ borderWidth: 1, borderColor: 'red' }}>
-              <Ionicons style={{ borderColor: 'red' }} name="send" size={16} color="blue" />
-            </View>
-          <Button title="Submit" onPress={addCommentHandler} />
+      <View style={[styles.inputContainer, customStyles.shadowContainer]}>
+          <TextInput 
+            style={{ flex: 1, marginRight: 16 }}
+            placeholder='Add comment' onChangeText={commentInputHandler} />
+          <Pressable onPress={addCommentHandler}>
+            <Ionicons style={{}} name="send" size={20} color="blue" />
+          </Pressable>
       </View>
-      <View style={styles.commentsContainer}>
+      <View style={[styles.commentsContainer, customStyles.shadowContainer]}>
         <FlatList
           data={comments}
           keyExtractor={(item, idx) => item.id }
-          renderItem={(itemData) => {
+          renderItem={({item, index}) => {
+            const isFirstItem = index === 0;
+            const isLastItem = index === comments.length - 1;
             return (
-              <View style={{}} >
-                <Text>{itemData.item.comment}</Text>
+              <View style={styles.comment}>
+                {isFirstItem && <View style={{ marginTop: 8 }}></View>}
+                {!isFirstItem && <View style={styles.commentSeparator}></View>}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <PressableOpacity hitSlop={10} onPress={() => {}}>
+                    <Avatar name={'Warren Buffet'} size={32} />
+                  </PressableOpacity>
+                  <Text style={{ marginBottom: 2, marginLeft: 8 }}>{item.comment}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 10, marginRight: 8 }}>{item.date}</Text>
+                  <Octicons name="thumbsup" size={14} color="blue" />
+                </View>
+                {isLastItem && <View style={{ marginTop: 12 }}></View>}
               </View>
             )
           }}
@@ -281,6 +305,13 @@ export default function SearchScreen({ route }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   autocompleteContainer: { flex: 0 },
+  inputContainer: {
+    flexDirection: 'row',
+    margin: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: 'white',
+  },
   input: {
     flex: 1,
     backgroundColor: 'white',
@@ -297,11 +328,11 @@ const styles = StyleSheet.create({
   },
   myLocationButton: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 20,
     right: 20,
     backgroundColor: '#007AFF',
     borderRadius: 30,
-    padding: 12,
+    padding: 6,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -310,10 +341,18 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   commentsContainer: {
-    marginBottom: 4,
     marginHorizontal: 8,
-    padding: 8,
-    borderRadius: 4,
+    // padding: 8,
     backgroundColor: 'white',
   },
+  comment: {
+    marginHorizontal: 8,
+    marginVertical: 8,
+  },
+  commentSeparator: {
+    borderWidth: 0.4,
+    borderColor: 'lightgray',
+    marginBottom: 16,
+    marginHorizontal: 2
+  }
 });

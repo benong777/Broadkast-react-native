@@ -12,13 +12,13 @@ import SignupScreen from './screens/SignupScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import HomeScreen from './screens/HomeScreen';
 import SearchScreen from './screens/SearchScreen';
-import DetailScreen from './screens/DetailScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import { Colors } from './constants/styles';
 import AuthContextProvider, { AuthContext } from './store/auth-context';
 import IconButton from './components/ui/IconButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
+import { STRINGS } from './constants/constants';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,7 +26,7 @@ function AuthStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary500 },
+        headerStyle: { backgroundColor: Colors.primary800 },
         headerTintColor: 'white',
         contentStyle: { backgroundColor: Colors.primary100 },
       }}
@@ -43,7 +43,7 @@ function AuthenticatedStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary500 },
+        headerStyle: { backgroundColor: Colors.primary800 },
         headerTintColor: 'white',
         contentStyle: { backgroundColor: Colors.primary100 },
         /*
@@ -64,17 +64,12 @@ function AuthenticatedStack() {
       <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={{}}
-      />
-      <Stack.Screen
-        name="Details"
-        component={DetailScreen}
-        options={{}}
+        options={{ title: STRINGS.companyName }}
       />
       <Stack.Screen
         name="SearchScreen"
         component={SearchScreen}
-        options={{}}
+        options={{ title: 'Details', headerBackTitle: "Back" }}
       />
       <Stack.Screen
         name="Welcome"
