@@ -1,8 +1,8 @@
 # Broadkast-react-native
-* Note: This is the iOS/Android version of Broadkast developed using React Native. For my WEB version, click on the link below:
+* Note: This is the iOS/Android version of Broadkast developed using React Native. For my WEB version, click on the following links below:
 [Broadkast README](https://github.com/benong777/Broadkast/blob/main/README.md)
 
-* ( VIDEO DEMO ):
+* ( Web Video DEMO ):
 https://www.youtube.com/watch?v=uR9E_H1A_zA
 
 
@@ -18,7 +18,7 @@ https://www.youtube.com/watch?v=uR9E_H1A_zA
 
 ## Introduction
 
-Social platform for users to communicate and post live updates of a particular location. For example, tennis players can alert others when courts are full and has a long wait.  Likewise, users can post when a parking lot is full or when tickets are sold out.
+Social platform for users to communicate and post live updates of a particular location. For example, tennis players can alert others when courts are full and has a long wait.  Likewise, users can post when a parking lot is full or when tickets are sold out. Developed using React Native, Firebase Authentication and Firestore Database.
 
 ## Screenshots
 <img src="assets/screenshots/Login.png" style="width:33%;"/> |
